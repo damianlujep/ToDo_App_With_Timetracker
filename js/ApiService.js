@@ -1,7 +1,7 @@
 
 class ApiService {
     constructor() {
-        this.apikey = "2daed076-b5f5-423b-8262-edd6b33ea5a1"; //tutaj jest swój klucz
+        this.apikey = "c92b0b72-5c98-4d91-a51e-da2eccea8a53"; //tutaj jest swój klucz
         this.url = "https://todo-api.coderslab.pl";
     }
 
@@ -99,26 +99,6 @@ class ApiService {
         return operation;
     }
 
-    addEventToLoadOperations(taskOperationsElement) {
-        // Dostajemy się do h2, do którego podepniemy zdarzenie 'click'
-        const h2Elem = taskOperationsElement.firstElementChild;
-
-        // Pobieramy id zadania z atrybutu data-id
-        const taskId = taskOperationsElement.dataset.id;
-
-        h2Elem.addEventListener("click", () => {
-            this.apiService.getOperationsForTask(
-                taskId,
-                (operations) => {
-                    operations.forEach((operation) => {
-                        this.createOperationElement(operation, taskOperationsElement);
-                    });
-                },
-                (error) => console.log(error)
-            );
-        });
-    }
-
     addOperationForTask(
         taskId,
         operation,
@@ -143,6 +123,60 @@ class ApiService {
                         responseData.data
                     );
                     successCallbackFn(operation);
+                }
+            })
+            .catch((error) => {
+                if (typeof errorCallbackFn === "function") {
+                    errorCallbackFn(error);
+                }
+            });
+    }
+
+    // ApiService.js
+
+    updateOperation(operation, successCallbackFn, errorCallbackFn) {
+        fetch(this.url + "/api/operations/" + operation.id, {
+            headers: {
+                Authorization: this.apikey,
+                "Content-Type": "application/json",
+            },
+            method: "PUT",
+            body: JSON.stringify(operation),
+        })
+            .then((response) => {
+                return response.json();
+            })
+            .then((responseData) => {
+                if (typeof successCallbackFn === "function") {
+                    const operation = this.createOperationFromResponseData(
+                        responseData.data
+                    );
+                    successCallbackFn(operation);
+                }
+            })
+            .catch((error) => {
+                if (typeof errorCallbackFn === "function") {
+                    errorCallbackFn(error);
+                }
+            });
+    }
+
+    updateTask(task, successCallbackFn, errorCallbackFn) {
+        fetch(this.url + "/api/tasks/" + task.id, {
+            headers: {
+                Authorization: this.apikey,
+                "Content-Type": "application/json",
+            },
+            method: "PUT",
+            body: JSON.stringify(task),
+        })
+            .then((response) => {
+                return response.json();
+            })
+            .then((responseData) => {
+                if (typeof successCallbackFn === "function") {
+                    const newTask = this.createTaskFromResponseData(responseData.data);
+                    successCallbackFn(newTask);
                 }
             })
             .catch((error) => {
